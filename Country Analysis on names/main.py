@@ -110,6 +110,8 @@ class RNNClassifier(torch.nn.Module):
         # pack them up
         gru_input = pack_padded_sequence(embedding, seq_lengths)
 
+        # output: (seq_len, batch_size, n_directions * hidden_size)
+        # hidden: (n_layers * n_directions, batch_size, hidden_size)
         output, hidden = self.gru(gru_input, hidden)
         if self.n_directions == 2:
             hidden_cat = torch.cat([hidden[-1], hidden[-2]], dim=1)
