@@ -1,0 +1,1 @@
+删掉了autoconf配置文件和生成的makefile，只做阅读之用。
