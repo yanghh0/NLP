@@ -35,6 +35,7 @@ def TransformData(names, countries):
     seq_lengths = torch.LongTensor([len(x) for x in name_sequences])
     countries = countries.long()
 
+    # 每个样本的时间步长弄成相同的，不足的补零
     seq_tensor = torch.zeros(len(name_sequences), seq_lengths.max()).long()
     for idx, (seq, seq_len) in enumerate(zip(name_sequences, seq_lengths), 0):
         seq_tensor[idx, :seq_len] = torch.LongTensor(seq)
