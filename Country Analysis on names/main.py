@@ -28,6 +28,9 @@ def CreateTensor(tensor):
     return tensor
 
 def TransformData(names, countries):
+    """
+    一个名字和对应的国家就是一个样本，名字的每个字母就是每个时间步对网络的输入
+    """
     name_sequences = [String2List(name) for name in names]
     seq_lengths = torch.LongTensor([len(x) for x in name_sequences])
     countries = countries.long()
