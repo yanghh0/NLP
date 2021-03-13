@@ -121,6 +121,8 @@ class RNNClassifier(torch.nn.Module):
             hidden_cat = torch.cat([hidden[-1], hidden[-2]], dim=1)
         else:
             hidden_cat = hidden[-1]
+        # hidden_cat: (batch_size, hidden * n_directions)
+        # fc_output: (batch_size, N_COUNTRY)
         fc_output = self.fc(hidden_cat)
         
         return fc_output
