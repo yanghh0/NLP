@@ -6,3 +6,7 @@ demo.clf.*
 sent.*
 *.out
 *.log
+glove.6B.100d.txt
+
+# pycharm
+.idea/
