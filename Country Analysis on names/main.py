@@ -14,7 +14,7 @@ BATCH_SIZE = 256
 HIDDEN_SIZE = 100
 N_LAYER = 2
 N_EPOCHS = 15
-N_CHARS = 128     # ASCII码表大小，用作embedding输出维度
+N_CHARS = 128     # ASCII码表大小，字典长度
 USE_GPU = True
 
 def String2List(name):
