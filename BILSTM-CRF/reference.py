@@ -96,6 +96,8 @@ class BiLstmCrf(nn.Module):
         # 初始化alphas'，shape: (1, tagset_size)
         init_alphas = torch.Tensor(1, self.tagset_size).fill_(-10000.)
         # 初始化 START 节点的score，START_TAG 位置取 0 其他位置取 -10000
+        # 因为是取对数后的值，start节点原来是要初始化为1的，那取对数后就是0，其它标签的节点原来要
+        # 初始化为 0，用 -10000 来表示 ln0，代表一个很小的值
         init_alphas[0][self.tag_to_idx[START_TAG]] = 0.
         previous = init_alphas
 
