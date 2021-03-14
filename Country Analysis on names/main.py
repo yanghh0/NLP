@@ -98,6 +98,7 @@ class RNNClassifier(torch.nn.Module):
         self.fc = torch.nn.Linear(in_features=hidden_size * self.n_directions, out_features=output_size)
 
     def _init_hidden(self, batch_size):
+        # 初始化h0
         hidden = torch.zeros(self.n_layers * self.n_directions, batch_size, self.hidden_size)
         return CreateTensor(hidden)
 
