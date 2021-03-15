@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding:utf8 -*-
 
+"""
+这个代码采用官方的实现，可作为一个参考
+"""
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
