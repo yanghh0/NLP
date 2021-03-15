@@ -97,7 +97,7 @@ class BiLstmCrf(nn.Module):
         return lstm_feats
 
     def _forward_alg(self, feats):
-        # 初始化alphas'，shape: (1, tagset_size)
+        # 初始化alphas'，shape: (1, tagset_size)，这里的 1 就是 batch 的维度，这里都是batch_size=1
         init_alphas = torch.Tensor(1, self.tagset_size).fill_(-10000.)
         # 初始化 START 节点的score，START_TAG 位置取 0 其他位置取 -10000
         # 因为是取对数后的值，start节点原来是要初始化为1的，那取对数后就是0，其它标签的节点原来要
