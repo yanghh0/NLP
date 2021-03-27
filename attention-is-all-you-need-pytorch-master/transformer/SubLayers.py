@@ -48,6 +48,8 @@ class MultiHeadAttention(nn.Module):
         if mask is not None:
             mask = mask.unsqueeze(1)   # For head axis broadcasting.
 
+        # q: (sz_b, n_head, len_v, d_v)
+        # attn: (sz_b, h_head, len_v*len_v)
         q, attn = self.attention(q, k, v, mask=mask)
 
         # Transpose to move the head dimension back: b x lq x n x dv
