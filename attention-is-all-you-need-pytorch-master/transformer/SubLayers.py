@@ -17,6 +17,7 @@ class MultiHeadAttention(nn.Module):
         self.d_k = d_k
         self.d_v = d_v
 
+        # 定义 3 个线性变换层
         self.w_qs = nn.Linear(d_model, n_head * d_k, bias=False)
         self.w_ks = nn.Linear(d_model, n_head * d_k, bias=False)
         self.w_vs = nn.Linear(d_model, n_head * d_v, bias=False)
@@ -31,13 +32,11 @@ class MultiHeadAttention(nn.Module):
     def forward(self, q, k, v, mask=None):
 
         d_k, d_v, n_head = self.d_k, self.d_v, self.n_head
-        # batch, 时间步, 时间步, 时间步
         sz_b, len_q, len_k, len_v = q.size(0), q.size(1), k.size(1), v.size(1)
 
         residual = q
 
-        # Pass through the pre-attention projection: b x lq x (n*dv)
-        # Separate different heads: b x lq x n x dv
+        # 经过三个线性变换，Separate different heads: batch x seq_len x n_head x d_model / n_head
         q = self.w_qs(q).view(sz_b, len_q, n_head, d_k)
         k = self.w_ks(k).view(sz_b, len_k, n_head, d_k)
         v = self.w_vs(v).view(sz_b, len_v, n_head, d_v)
