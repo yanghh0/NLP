@@ -14,11 +14,14 @@ class ScaledDotProductAttention(nn.Module):
 
     def forward(self, q, k, v, mask=None):
 
+        # QK^T/d
         attn = torch.matmul(q / self.temperature, k.transpose(2, 3))
 
+        # 要掩盖掉哪个时间步，就让 A 矩阵对应时间步的权重很小 
         if mask is not None:
             attn = attn.masked_fill(mask == 0, -1e9)
 
+        # 得到 A 矩阵
         attn = self.dropout(F.softmax(attn, dim=-1))
         output = torch.matmul(attn, v)
 
