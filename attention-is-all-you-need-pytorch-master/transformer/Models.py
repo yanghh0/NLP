@@ -15,23 +15,25 @@ def get_pad_mask(seq, pad_idx):
 def get_subsequent_mask(seq):
     ''' For masking out the subsequent info. '''
     sz_b, len_s = seq.size()
+    # 这里在 axis = 0 处增加了一个维度，即 batch，其实会自动进行广播的
     subsequent_mask = (1 - torch.triu(torch.ones((1, len_s, len_s), device=seq.device), diagonal=1)).bool()
     return subsequent_mask
 
 
 class PositionalEncoding(nn.Module):
 
+    # 用最长的句子长度来计算(200)，这样就可适用于不同时间步的句子
+    # hid 即词嵌入的维度 d_word_vec 
     def __init__(self, d_hid, n_position=200):
         super(PositionalEncoding, self).__init__()
 
-        # Not a parameter
+        # Not a parameter，不需要进行参数跟新，但是梯度仍然会被计算
         self.register_buffer('pos_table', self._get_sinusoid_encoding_table(n_position, d_hid))
 
     def _get_sinusoid_encoding_table(self, n_position, d_hid):
         ''' Sinusoid position encoding table '''
-        # TODO: make it with torch instead of numpy
 
-        # 返回一个d_hid长度的array
+        # 返回数组形状为: (d_hid)
         def get_position_angle_vec(position):
             return [position / np.power(10000, 2 * (hid_j // 2) / d_hid) for hid_j in range(d_hid)]
 
@@ -40,22 +42,18 @@ class PositionalEncoding(nn.Module):
         sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])  # dim 2i
         sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])  # dim 2i+1
 
+        # 返回形状 (1, n_position, d_hid)，和文本嵌入层的输出张量相加时会在 batch 维度进行广播
+        # 不同 batch 的位置编码矩阵都是一样的。
+        # 其实不需要在 axis = 0 增加一个维度，因为缺失的维度也会自动广播
         return torch.FloatTensor(sinusoid_table).unsqueeze(0)
 
     def forward(self, x):
+        # x 是文本嵌入层输出张量，pos_table 拷贝一份后，利用 detach 截断反向传播的梯度流
         return x + self.pos_table[:, :x.size(1)].clone().detach()
 
 
 class Encoder(nn.Module):
     ''' A encoder model with self attention mechanism. '''
-
-    """
-        self.encoder = Encoder(
-        n_src_vocab=n_src_vocab, n_position=n_position,
-        d_word_vec=d_word_vec, d_model=d_model, d_inner=d_inner,
-        n_layers=n_layers, n_head=n_head, d_k=d_k, d_v=d_v,
-        pad_idx=src_pad_idx, dropout=dropout, scale_emb=scale_emb)
-    """
 
     def __init__(
             self, n_src_vocab, d_word_vec, n_layers, n_head, d_k, d_v,
@@ -63,9 +61,12 @@ class Encoder(nn.Module):
 
         super().__init__()
 
+        # 词嵌入层
         self.src_word_emb = nn.Embedding(n_src_vocab, d_word_vec, padding_idx=pad_idx)
+        # 位置编码层
         self.position_enc = PositionalEncoding(d_word_vec, n_position=n_position)
         self.dropout = nn.Dropout(p=dropout)
+        # 编码器层
         self.layer_stack = nn.ModuleList([
             EncoderLayer(d_model, d_inner, n_head, d_k, d_v, dropout=dropout)
             for _ in range(n_layers)])
@@ -78,12 +79,10 @@ class Encoder(nn.Module):
         enc_slf_attn_list = []
 
         # -- Forward
-        # (batch, seq_len, d_word_vec)
         enc_output = self.src_word_emb(src_seq)
         if self.scale_emb:
             enc_output *= self.d_model ** 0.5
 
-        # (batch, seq_len, d_word_vec)
         enc_output = self.dropout(self.position_enc(enc_output))
         enc_output = self.layer_norm(enc_output)
 
@@ -106,6 +105,9 @@ class Decoder(nn.Module):
         super().__init__()
 
         self.trg_word_emb = nn.Embedding(n_trg_vocab, d_word_vec, padding_idx=pad_idx)
+
+
+
         self.position_enc = PositionalEncoding(d_word_vec, n_position=n_position)
         self.dropout = nn.Dropout(p=dropout)
         self.layer_stack = nn.ModuleList([
